@@ -1,0 +1,17 @@
+<!-- templates/partials/hero.html -->
+<section class="hero">
+    <div class="hero-bg-shape"></div>
+    <div class="container">
+        <div class="hero-content">
+            <span class="hero-subtitle">Индивидуальный подход</span>
+            <h1>Корпусная мебель, созданная для вашего комфорта</h1>
+            <p class="hero-description">Изготавливаем кухни, шкафы-купе, гардеробные и любую другую мебель на заказ по вашим размерам и эскизам. Воплощаем ваши идеи в жизнь.</p>
+            <a href="#contact" class="btn">Рассчитать стоимость</a>
+            <a href="#portfolio" class="btn btn-outline" style="margin-left: 15px;">Смотреть работы</a>
+        </div>
+        <div class="hero-image">
+            {% load static %}
+            <img src="{% static 'images/living_room.webp' %}" alt="Интерьер с корпусной мебелью">
+        </div>
+    </div>
+</section>

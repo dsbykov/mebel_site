@@ -1,0 +1,16 @@
+<!-- templates/partials/portfolio.html -->
+<section id="portfolio" class="portfolio">
+    <div class="container">
+        <h2>Наши последние проекты</h2>
+        <div class="carousel">
+            {% for project in projects %}
+                <div class="carousel-item" onclick="openModal('{{ project.title }}', '{% for img in project.images.all %}{{ img.image.url }}{% if not for.last %},{% endif %}{% endfor %}', '{{ project.description|escape }}')">
+                    <img src="{{ project.images.first.image.url }}" alt="{{ project.title }}">
+                    <div class="project-hover">
+                        <p>{{ project.description|truncatewords:10 }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
