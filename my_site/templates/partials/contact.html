@@ -4,10 +4,39 @@
         <div class="contact-grid">
             <div class="contact-info">
                 <h2 style="margin-bottom: 30px;">Свяжитесь с нами</h2>
-                <p><span class="contact-icon">📍</span> г. Волгоград, ул. Менделеева, д. 218</p>
-                <p><span class="contact-icon">📞</span> +7 (902) 311-76-45</p>
-                <p><span class="contact-icon">✉️</span> vashmeb@mail.ru</p>
-                <p><span class="contact-icon">🕒</span> Пн-Пт: 9:00 - 20:00</p>
+
+                {% if site_settings %}
+                    {% if site_settings.address %}
+                        <p><span class="contact-icon">📍</span> 
+                            <a target="_blank">
+                                {{ site_settings.address }}
+                            </a>
+                        </p>
+                    {% endif %}
+
+                    {% if site_settings.phone %}
+                        <p><span class="contact-icon">📞</span> 
+                            <a href="tel:{{ site_settings.phone }}">
+                                {{ site_settings.phone }}
+                            </a>
+                        </p>
+                    {% endif %}
+
+                    {% if site_settings.email %}
+                        <p><span class="contact-icon">✉️</span> 
+                            <a href="mailto:{{ site_settings.email }}">
+                                {{ site_settings.email }}
+                            </a>
+                        </p>
+                    {% endif %}
+                        <p><span class="contact-icon">🕒</span> Пн-Пт: 9:00 - 20:00</p>
+                {% else %}
+                    <!-- Резервные данные (если настройки не заполнены) -->
+                    <p><span class="contact-icon">📍</span> г. Волгоград, ул. Менделеева, д. 218 (по умолчанию)</p>
+                    <p><span class="contact-icon">📞</span> +7 (902) 311-76-45</p>
+                    <p><span class="contact-icon">✉️</span> vashmeb@mail.ru</p>
+                    <p><span class="contact-icon">🕒</span> Пн-Пт: 9:00 - 20:00</p>
+                {% endif %}
             </div>
         </div>
     </div>
