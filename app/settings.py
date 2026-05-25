@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'app',
     'my_site',
-    # 'social_django',
+    'social_django',
 ]
 
 MIDDLEWARE = [
@@ -120,15 +120,21 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    # 'social_core.backends.yandex.YandexOAuth2',
+    'social_core.backends.yandex.YandexOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
 SOCIAL_AUTH_YANDEX_OAUTH2_KEY = os.environ.get("SOCIAL_AUTH_YANDEX_OAUTH2_KEY")
-SOCIAL_AUTH_YANDEX_OAUTH2_SECRET = os.environ.get("SOCIAL_AUTH_YANDEX_OAUTH2_SECRET")
+SOCIAL_AUTH_YANDEX_OAUTH2_SECRET = os.environ.get("SOCIAL_AUTH_YANDEX_OAUTH2_SECRET")\
+
+SOCIAL_AUTH_LOGIN_URL = '/auth/login/yandex-oauth2/'
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'home'
+SOCIAL_AUTH_LOGIN_ERROR_URL = '/login-error/'
 
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+# LOGOUT_REDIRECT_URL = '/'
+
+LOGIN_URL = SOCIAL_AUTH_LOGIN_URL
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
@@ -153,3 +159,29 @@ STATICFILES_DIRS = [
 
 # ← путь, куда collectstatic копирует всё
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'social': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

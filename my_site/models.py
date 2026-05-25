@@ -9,6 +9,10 @@ class UserProfile(models.Model):
     avatar_url = models.URLField(blank=True, null=True)
     date_joined = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        verbose_name = "Профиль пользователя"
+        verbose_name_plural = "Профили пользователей"
+
     def __str__(self):
         return self.username or self.email or f"Yandex user {self.yandex_id}"
 
@@ -21,9 +25,13 @@ class Review(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=True)  # можно модерировать
 
+    class Meta:
+        verbose_name = "Отзыв"
+        verbose_name_plural = "Отзывы"
+
     def __str__(self):
         return f"Отзыв от {self.author} — {self.rating}★"
-
+    
 
 class Project(models.Model):
     title = models.CharField(max_length=200, verbose_name="Название проекта")
@@ -38,14 +46,22 @@ class Project(models.Model):
         verbose_name="Рекомендуемый отзыв"
     )
 
+    class Meta:
+        verbose_name = "Проект"
+        verbose_name_plural = "Проекты"
+
     def __str__(self):
         return self.title
 
 
 class ProjectImage(models.Model):
-    project = models.ForeignKey(Project, related_name='images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='media/portfolio/')
+    project = models.ForeignKey(Project, related_name='images', on_delete=models.CASCADE, verbose_name="Проект")
+    image = models.ImageField(upload_to='media/portfolio/', verbose_name="Файл изображения")
     alt_text = models.CharField(max_length=200, blank=True, verbose_name="Описание изображения")
+
+    class Meta:
+        verbose_name = "Фото"
+        verbose_name_plural = "Фотографии"
 
     def __str__(self):
         return f"Фото для {self.project.title}"
@@ -57,17 +73,25 @@ class Partner(models.Model):
     logo = models.ImageField(upload_to='media/partners/', blank=True, null=True, verbose_name="Логотип")
     is_active = models.BooleanField(default=True)
 
+    class Meta:
+        verbose_name = "Партнёр"
+        verbose_name_plural = "Партнёры"
+
     def __str__(self):
         return self.name
 
 
 class SiteSettings(models.Model):
     business_description = models.TextField(verbose_name="Описание деятельности")
-    phone = models.CharField(max_length=20, blank=True)
-    email = models.EmailField()
-    address = models.CharField(max_length=255, blank=True)
+    phone = models.CharField(max_length=20, blank=True, verbose_name="Номер мобильного")
+    email = models.EmailField(verbose_name="Электронная почта")
+    address = models.CharField(max_length=255, blank=True, verbose_name="Адресс компании")
     yandex_map_link = models.URLField(blank=True, verbose_name="Ссылка на Яндекс.Карты")
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата изменения")
 
+    class Meta:
+        verbose_name = "Настройки сайта"
+        verbose_name_plural = "Настройки сайта"
+    
     def __str__(self):
         return "Настройки сайта"
