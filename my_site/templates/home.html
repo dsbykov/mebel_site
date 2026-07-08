@@ -14,6 +14,7 @@
         {% include "partials/testimonials.html" %}
         {% include "partials/contact.html" %}
         {% include "partials/modal.html" %}
+    {% include "partials/review_modal.html" %}
     </main>
     {% include "partials/footer.html" %}
 {% endblock %}
@@ -85,5 +86,82 @@
             closeModal();
         }
     };
+
+    function openReviewModal() {
+        document.getElementById('reviewModal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeReviewModal() {
+        document.getElementById('reviewModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    // Закрыть модалку при нажатии Esc
+    document.addEventListener('keydown', function(e) {
+        const modal = document.getElementById('reviewModal');
+        if (modal && modal.style.display === 'block' && e.key === 'Escape') {
+            closeReviewModal();
+        }
+    });
+
+    // Обработка клика вне модального окна для закрытия
+    document.getElementById('reviewModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeReviewModal();
+        }
+    });
+
+    // Обработка клика по кнопке "Отмена"
+    document.getElementById('reviewForm').addEventListener('click', function(e) {
+        if (e.target.classList.contains('btn-secondary') && e.target.textContent === 'Отмена') {
+            e.preventDefault();
+            closeReviewModal();
+        }
+    });
+
+    // Закрытие модального окна при нажатии Escape
+    document.addEventListener('keydown', function(e) {
+        const modal = document.getElementById('reviewModal');
+        if (modal && modal.style.display === 'block' && e.key === 'Escape') {
+            closeReviewModal();
+        }
+    });
+
+    // Обработка отправки формы отзыва
+    document.getElementById('reviewForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        try {
+            const response = await fetch('/review/create/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                credentials: 'same-origin'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success !== false) {
+                // Успешная отправка
+                alert('Спасибо за ваш отзыв! Он будет опубликован после модерации.');
+                closeReviewModal();
+                // Очистка формы
+                this.reset();
+            } else {
+                // Показ ошибок
+                const errorMessages = Object.values(result.errors).join('\n');
+                alert('Ошибки при отправке отзыва:\n' + errorMessages);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Произошла ошибка при отправке отзыва. Пожалуйста, перелогиньтесь и повторите попытку.');
+        }
+    });
 </script>
 {% endblock  %}

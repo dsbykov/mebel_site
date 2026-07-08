@@ -1,0 +1,30 @@
+<!-- templates/partials/review_modal.html -->
+<div id="reviewModal" class="modal">
+    <div class="review-modal-content">
+        <div class="modal-header">
+            <h2>Оставить отзыв</h2>
+            <span class="close" onclick="closeReviewModal()">&times;</span>
+        </div>
+        <form id="reviewForm" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_text">Текст отзыва:</label>
+                <textarea id="id_text" name="text" required rows="6" placeholder="Поделитесь своим опытом..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="id_rating">Оценка:</label>
+                <select id="id_rating" name="rating" required>
+                    <option value="5">5 - Отлично</option>
+                    <option value="4">4 - Хорошо</option>
+                    <option value="3">3 - Удовлетворительно</option>
+                    <option value="2">2 - Плохо</option>
+                    <option value="1">1 - Очень плохо</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-white" onclick="closeReviewModal()">Отмена</button>
+                <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+            </div>
+        </form>
+    </div>
+</div>

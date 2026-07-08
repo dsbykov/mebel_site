@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import os
 
 from pathlib import Path
+from pickle import FALSE
+from venv import logger
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -31,7 +33,9 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False") == "True"
-print("DEBUG = ", DEBUG, "\n")
+logger.info("DEBUG = ", DEBUG, "\n")
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+logger.info("LOG_LEVEL = ", LOG_LEVEL, "\n")
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "127.0.0.1 localhost 0.0.0.0").split(" ")
 
@@ -72,6 +76,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -128,13 +134,37 @@ SOCIAL_AUTH_YANDEX_OAUTH2_KEY = os.environ.get("SOCIAL_AUTH_YANDEX_OAUTH2_KEY")
 SOCIAL_AUTH_YANDEX_OAUTH2_SECRET = os.environ.get("SOCIAL_AUTH_YANDEX_OAUTH2_SECRET")\
 
 SOCIAL_AUTH_LOGIN_URL = '/auth/login/yandex-oauth2/'
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'home'
-SOCIAL_AUTH_LOGIN_ERROR_URL = '/login-error/'
+# SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'home'
+# SOCIAL_AUTH_LOGIN_ERROR_URL = '/login-error/'
 
+
+# Если вам нужно собственное пространство имен:
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
+SOCIAL_AUTH_YANDEX_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
+    'access_type': 'offline'
+}
+
+# Настройка перенаправления после авторизации
 LOGIN_REDIRECT_URL = '/'
-# LOGOUT_REDIRECT_URL = '/'
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/'
+SOCIAL_AUTH_NEW_USER_REDIRECT_URL = '/'
+SOCIAL_AUTH_NEW_ASSOCIATION_REDIRECT_URL = '/'
 
 LOGIN_URL = SOCIAL_AUTH_LOGIN_URL
+
+# Важно: убедитесь, что pipeline включает сохранение extra_data
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+    'my_site.pipeline.create_user_profile',
+)
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
@@ -167,21 +197,47 @@ MEDIA_ROOT = BASE_DIR / 'media'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {asctime} {name} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+            'level': 'DEBUG',
         },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': LOG_LEVEL,
     },
     'loggers': {
         'social': {
             'handlers': ['console'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
         'django': {
             'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'app': {
+            'handlers': ['console'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
+        },
+        'my_site': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
         },
     },
 }
