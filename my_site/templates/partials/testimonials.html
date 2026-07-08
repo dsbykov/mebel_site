@@ -2,19 +2,60 @@
 <section class="testimonials">
     <div class="container">
         <h2>Отзывы наших клиентов</h2>
-        <div class="testimonials-grid">
-            <div class="testimonial-card">
-                <div class="testimonial-text">«Огромное спасибо команде ArtWood! Заказали кухню, все сделали точно в срок, качество материалов отличное. Дизайнер помогла с выбором цвета и фурнитуры. Очень довольны!»</div>
-                <div class="testimonial-author">Елена Смирнова</div>
+        
+        <!-- Контейнер карусели с отзывами и кнопками навигации -->
+        <div class="carousel-wrapper">
+            <button class="carousel-btn prev" onclick="loadReviews.prev()">&#10094;</button>
+            
+            <div class="carousel-container" id="reviewCarousel">
+                {% include 'partials/reviews_list.html' %}
             </div>
-            <div class="testimonial-card">
-                <div class="testimonial-text">«Делали шкаф-купе в прихожую по индивидуальным размерам. Все идеально встало, мастера работают очень аккуратно. Рекомендую!»</div>
-                <div class="testimonial-author">Алексей Петров</div>
-            </div>
-            <div class="testimonial-card">
-                <div class="testimonial-text">«Искал компанию, которая сможет воплотить сложный дизайн-проект гардеробной. В ArtWood не побоялись, сделали все на высшем уровне. Спасибо!»</div>
-                <div class="testimonial-author">Марина Орлова</div>
-            </div>
+            
+            <button class="carousel-btn next" onclick="loadReviews.next()">&#10095;</button>
+        </div>
+        
+        <!-- Индикаторы страниц под блоком отзывов -->
+        <div class="carousel-indicators" id="carouselIndicators">
+            <!-- Индикаторы будут сгенерированы через JS -->
+        </div>
+        
+        <div class="testimonials-actions">
+            {% if user.is_authenticated %}
+                <button class="btn btn-primary" onclick="openReviewModal()">Оставить отзыв</button>
+            {% else %}
+                <a href="/auth/login/yandex-oauth2/" class="btn btn-secondary">Войти по ЯндексID</a>
+            {% endif %}
+            {% if user.is_authenticated %}
+                <div id="reviewModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Оставить отзыв</h2>
+                            <span class="close" onclick="closeReviewModal()">&times;</span>
+                        </div>
+                        <form id="reviewForm" method="post">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="id_text">Текст отзыва:</label>
+                                <textarea id="id_text" name="text" required rows="6" placeholder="Поделитесь своим опытом..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="id_rating">Оценка:</label>
+                                <select id="id_rating" name="rating" required>
+                                    <option value="5">5 - Отлично</option>
+                                    <option value="4">4 - Хорошо</option>
+                                    <option value="3">3 - Удовлетворительно</option>
+                                    <option value="2">2 - Плохо</option>
+                                    <option value="1">1 - Очень плохо</option>
+                                </select>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="closeReviewModal()">Отмена</button>
+                                <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
 </section>

@@ -14,6 +14,7 @@
         {% include "partials/testimonials.html" %}
         {% include "partials/contact.html" %}
         {% include "partials/modal.html" %}
+    {% include "partials/review_modal.html" %}
     </main>
     {% include "partials/footer.html" %}
 {% endblock %}
@@ -85,5 +86,196 @@
             closeModal();
         }
     };
+
+    // Управление пагинацией отзывов через AJAX
+    const loadReviews = {
+        currentPage: {{ reviews_json.current_page|default:1 }},
+        totalPages: {{ reviews_json.num_pages|default:1 }},
+        isLoading: false,
+        container: document.getElementById('reviewCarousel'),
+        indicatorsContainer: document.getElementById('carouselIndicators'),
+        baseUrl: '/reviews/load/',
+        
+        init: function() {
+            if (!this.container) return;
+            this.generateIndicators();
+            this.updateButtons();
+            console.log('Пагинация инициализирована:', {
+                currentPage: this.currentPage,
+                totalPages: this.totalPages
+            });
+        },
+        
+        generateIndicators: function() {
+            if (!this.indicatorsContainer) return;
+            
+            let html = '';
+            for (let i = 1; i <= this.totalPages; i++) {
+                html += `<div class="indicator${i === this.currentPage ? ' active' : ''}" 
+                         data-page="${i}" onclick="loadReviews.goToPage(${i})"></div>`;
+            }
+            this.indicatorsContainer.innerHTML = html;
+        },
+        
+        updateButtons: function() {
+            const prevBtn = document.querySelector('.carousel-btn.prev');
+            const nextBtn = document.querySelector('.carousel-btn.next');
+            
+            if (prevBtn) {
+                prevBtn.disabled = this.currentPage === 1;
+                prevBtn.style.opacity = this.currentPage === 1 ? '0.5' : '1';
+            }
+            
+            if (nextBtn) {
+                nextBtn.disabled = this.currentPage === this.totalPages;
+                nextBtn.style.opacity = this.currentPage === this.totalPages ? '0.5' : '1';
+            }
+        },
+        
+        loadPage: async function(page) {
+            if (this.isLoading || page === this.currentPage) return;
+            
+            this.isLoading = true;
+            
+            try {
+                const response = await fetch(`${this.baseUrl}?page=${page}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.error('Ошибка загрузки отзывов:', data.error);
+                    this.isLoading = false;
+                    return;
+                }
+                
+                this.currentPage = data.current_page;
+                this.totalPages = data.num_pages;
+                
+                // Обновляем контент
+                this.container.innerHTML = data.html;
+                
+                // Обновляем индикаторы
+                this.generateIndicators();
+                this.updateButtons();
+                
+                console.log(`Загружена страница ${this.currentPage} из ${this.totalPages}`);
+                
+            } catch (error) {
+                console.error('Ошибка при загрузке отзывов:', error);
+            } finally {
+                this.isLoading = false;
+            }
+        },
+        
+        next: async function() {
+            if (this.currentPage < this.totalPages) {
+                await this.loadPage(this.currentPage + 1);
+            }
+        },
+        
+        prev: async function() {
+            if (this.currentPage > 1) {
+                await this.loadPage(this.currentPage - 1);
+            }
+        },
+        
+        goToPage: async function(page) {
+            await this.loadPage(page);
+        }
+    };
+    
+    // Инициализируем пагинацию после загрузки страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            loadReviews.init();
+            console.log('Пагинация отзывов инициализирована:', {
+                currentPage: loadReviews.currentPage,
+                totalPages: loadReviews.totalPages
+            });
+        }, 100);
+    });
+    
+    // Делаем доступным глобально
+    window.loadReviews = loadReviews;
+
+    function openReviewModal() {
+        document.getElementById('reviewModal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeReviewModal() {
+        document.getElementById('reviewModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    // Закрыть модалку при нажатии Esc
+    document.addEventListener('keydown', function(e) {
+        const modal = document.getElementById('reviewModal');
+        if (modal && modal.style.display === 'block' && e.key === 'Escape') {
+            closeReviewModal();
+        }
+    });
+
+    // Обработка клика вне модального окна для закрытия
+    document.getElementById('reviewModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeReviewModal();
+        }
+    });
+
+    // Обработка клика по кнопке "Отмена"
+    document.getElementById('reviewForm').addEventListener('click', function(e) {
+        if (e.target.classList.contains('btn-secondary') && e.target.textContent === 'Отмена') {
+            e.preventDefault();
+            closeReviewModal();
+        }
+    });
+
+    // Закрытие модального окна при нажатии Escape
+    document.addEventListener('keydown', function(e) {
+        const modal = document.getElementById('reviewModal');
+        if (modal && modal.style.display === 'block' && e.key === 'Escape') {
+            closeReviewModal();
+        }
+    });
+
+    // Обработка отправки формы отзыва
+    document.getElementById('reviewForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        try {
+            const response = await fetch('/review/create/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                credentials: 'same-origin'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success !== false) {
+                // Успешная отправка
+                alert('Спасибо за ваш отзыв! Он будет опубликован после модерации.');
+                closeReviewModal();
+                // Очистка формы
+                this.reset();
+            } else {
+                // Показ ошибок
+                const errorMessages = Object.values(result.errors).join('\n');
+                alert('Ошибки при отправке отзыва:\n' + errorMessages);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Произошла ошибка при отправке отзыва. Пожалуйста, перелогиньтесь и повторите попытку.');
+        }
+    });
 </script>
 {% endblock  %}

@@ -1,0 +1,16 @@
+{% for review in reviews %}
+<div class="carousel-item">
+    <div class="testimonial-card">
+        <div class="testimonial-text">«{{ review.text }}»</div>
+        <div class="testimonial-rating">{% for i in "x"|rjust:review.rating %}★{% endfor %}</div>
+        <div class="testimonial-author">{{ review.author.first_name }} {{ review.author.last_name }}</div>
+        <div class="testimonial-date">{{ review.created_at|date:"d.m.Y" }}</div>
+    </div>
+</div>
+{% empty %}
+<div class="carousel-item">
+    <div class="testimonial-card">
+        <p>Пока нет опубликованных отзывов</p>
+    </div>
+</div>
+{% endfor %}

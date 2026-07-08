@@ -1,0 +1,90 @@
+.modal-content {
+    max-width: 600px; /* Увеличиваем ширину модального окна */
+    width: 90%; /* На мобильных устройствах занимает 90% ширины */
+    box-sizing: border-box; /* Учитываем padding и border в ширине */
+    padding: 20px; /* Добавляем внутренние отступы */
+    margin: 40px auto; /* Центрируем и добавляем отступы сверху и снизу */
+    background-color: white; /* Белый фон */
+    border-radius: 8px; /* Скругленные углы */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Тень для глубины */
+}
+
+.btn-white {
+    background-color: white;
+    color: #0066cc; /* Акцентный цвет из стилей сайта */
+    border: 1px solid #0066cc;
+}
+
+.btn-white:hover {
+    background-color: #f0f8ff;
+    border-color: #0052a3;
+}
+
+/* Обеспечиваем полную высоту для модального окна на мобильных */
+@media (max-width: 768px) {
+    .modal-content {
+        max-width: 95%;
+        margin: 40px auto; /* Согласуем с основными стилями */
+        padding: 15px; /* Немного уменьшаем отступы на мобильных */
+    }
+}
+
+/* Стили для текста в модальном окне */
+.modal-content h2 {
+    margin: 0;
+    color: #333;
+}
+
+.modal-header {
+    padding: 20px 20px 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    resize: vertical;
+    box-sizing: border-box; /* Учитываем padding и border в ширине */
+}
+
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    box-sizing: border-box; /* Учитываем padding и border в ширине */
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px 0 10px;
+}
+
+.close {
+    font-size: 36px;
+    font-weight: 300;
+    line-height: 1;
+    color: #999;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #333;
+}
