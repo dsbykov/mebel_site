@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Project, SiteSettings, Review, UserProfile
 from .forms import ReviewForm
 from .utils import login_required
@@ -11,19 +11,68 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def load_reviews(request):
+    """AJAX endpoint для загрузки отзывов с пагинацией"""
+    # Убрали проверку на AJAX-запрос, чтобы работало с fetch API
+    page_number = request.GET.get('page', 1)
+    
+    reviews_list = Review.objects.filter(is_published=True).order_by('-created_at')
+    
+    paginator = Paginator(reviews_list, 3)  # 3 отзыва на страницу
+    
+    try:
+        reviews = paginator.page(page_number)
+    except PageNotAnInteger:
+        reviews = paginator.page(1)
+    except EmptyPage:
+        return JsonResponse({'error': 'No more reviews'}, status=404)
+    
+    # Рендерим только блок отзывов
+    from django.template.loader import render_to_string
+    html = render_to_string('partials/reviews_list.html', {
+        'reviews': reviews,
+    })
+    
+    return JsonResponse({
+        'html': html,
+        'current_page': reviews.number,
+        'num_pages': paginator.num_pages,
+        'has_next': reviews.has_next(),
+        'has_previous': reviews.has_previous(),
+    })
+
 
 def home(request):
     projects = Project.objects.prefetch_related('images').all()
     site_settings = SiteSettings.objects.first()
-    reviews = Review.objects.filter(is_published=True)
+    reviews_list = Review.objects.filter(is_published=True).order_by('-created_at')
+    
+    # Пагинация: по 3 отзыва на страницу
+    paginator = Paginator(reviews_list, 3)
+    page = request.GET.get('reviews_page', 1)
+    
+    try:
+        reviews = paginator.page(page)
+    except PageNotAnInteger:
+        reviews = paginator.page(1)
+    except EmptyPage:
+        reviews = paginator.page(paginator.num_pages)
+    
     logger.debug(f"reviews = {list(reviews)}")
-    logger.info(f"Number of reviews: {reviews.count()}")
+    logger.info(f"Number of reviews: {reviews_list.count()}")
     return render(
         request, 'home.html', 
         {
             'projects': projects,
             'site_settings': site_settings,
             'reviews': reviews,
+            'reviews_paginator': paginator,
+            'reviews_json': {
+                'current_page': reviews.number,
+                'num_pages': paginator.num_pages,
+                'has_next': reviews.has_next(),
+                'has_previous': reviews.has_previous(),
+            },
         }
     )
 

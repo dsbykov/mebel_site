@@ -87,6 +87,120 @@
         }
     };
 
+    // Управление пагинацией отзывов через AJAX
+    const loadReviews = {
+        currentPage: {{ reviews_json.current_page|default:1 }},
+        totalPages: {{ reviews_json.num_pages|default:1 }},
+        isLoading: false,
+        container: document.getElementById('reviewCarousel'),
+        indicatorsContainer: document.getElementById('carouselIndicators'),
+        baseUrl: '/reviews/load/',
+        
+        init: function() {
+            if (!this.container) return;
+            this.generateIndicators();
+            this.updateButtons();
+            console.log('Пагинация инициализирована:', {
+                currentPage: this.currentPage,
+                totalPages: this.totalPages
+            });
+        },
+        
+        generateIndicators: function() {
+            if (!this.indicatorsContainer) return;
+            
+            let html = '';
+            for (let i = 1; i <= this.totalPages; i++) {
+                html += `<div class="indicator${i === this.currentPage ? ' active' : ''}" 
+                         data-page="${i}" onclick="loadReviews.goToPage(${i})"></div>`;
+            }
+            this.indicatorsContainer.innerHTML = html;
+        },
+        
+        updateButtons: function() {
+            const prevBtn = document.querySelector('.carousel-btn.prev');
+            const nextBtn = document.querySelector('.carousel-btn.next');
+            
+            if (prevBtn) {
+                prevBtn.disabled = this.currentPage === 1;
+                prevBtn.style.opacity = this.currentPage === 1 ? '0.5' : '1';
+            }
+            
+            if (nextBtn) {
+                nextBtn.disabled = this.currentPage === this.totalPages;
+                nextBtn.style.opacity = this.currentPage === this.totalPages ? '0.5' : '1';
+            }
+        },
+        
+        loadPage: async function(page) {
+            if (this.isLoading || page === this.currentPage) return;
+            
+            this.isLoading = true;
+            
+            try {
+                const response = await fetch(`${this.baseUrl}?page=${page}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.error('Ошибка загрузки отзывов:', data.error);
+                    this.isLoading = false;
+                    return;
+                }
+                
+                this.currentPage = data.current_page;
+                this.totalPages = data.num_pages;
+                
+                // Обновляем контент
+                this.container.innerHTML = data.html;
+                
+                // Обновляем индикаторы
+                this.generateIndicators();
+                this.updateButtons();
+                
+                console.log(`Загружена страница ${this.currentPage} из ${this.totalPages}`);
+                
+            } catch (error) {
+                console.error('Ошибка при загрузке отзывов:', error);
+            } finally {
+                this.isLoading = false;
+            }
+        },
+        
+        next: async function() {
+            if (this.currentPage < this.totalPages) {
+                await this.loadPage(this.currentPage + 1);
+            }
+        },
+        
+        prev: async function() {
+            if (this.currentPage > 1) {
+                await this.loadPage(this.currentPage - 1);
+            }
+        },
+        
+        goToPage: async function(page) {
+            await this.loadPage(page);
+        }
+    };
+    
+    // Инициализируем пагинацию после загрузки страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            loadReviews.init();
+            console.log('Пагинация отзывов инициализирована:', {
+                currentPage: loadReviews.currentPage,
+                totalPages: loadReviews.totalPages
+            });
+        }, 100);
+    });
+    
+    // Делаем доступным глобально
+    window.loadReviews = loadReviews;
+
     function openReviewModal() {
         document.getElementById('reviewModal').style.display = 'block';
         document.body.style.overflow = 'hidden';

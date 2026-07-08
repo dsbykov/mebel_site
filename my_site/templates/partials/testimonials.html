@@ -2,15 +2,23 @@
 <section class="testimonials">
     <div class="container">
         <h2>Отзывы наших клиентов</h2>
-        <div class="testimonials-grid">
-            {% for review in reviews %}
-            <div class="testimonial-card">
-                <div class="testimonial-text">«{{ review.text }}»</div>
-                <div class="testimonial-rating">{% for i in "x"|rjust:review.rating %}★{% endfor %}</div>
-                <div class="testimonial-author">{{ review.author.first_name }} {{ review.author.last_name }}</div>
+        
+        <!-- Контейнер карусели с отзывами и кнопками навигации -->
+        <div class="carousel-wrapper">
+            <button class="carousel-btn prev" onclick="loadReviews.prev()">&#10094;</button>
+            
+            <div class="carousel-container" id="reviewCarousel">
+                {% include 'partials/reviews_list.html' %}
             </div>
-            {% endfor %}
+            
+            <button class="carousel-btn next" onclick="loadReviews.next()">&#10095;</button>
         </div>
+        
+        <!-- Индикаторы страниц под блоком отзывов -->
+        <div class="carousel-indicators" id="carouselIndicators">
+            <!-- Индикаторы будут сгенерированы через JS -->
+        </div>
+        
         <div class="testimonials-actions">
             {% if user.is_authenticated %}
                 <button class="btn btn-primary" onclick="openReviewModal()">Оставить отзыв</button>
