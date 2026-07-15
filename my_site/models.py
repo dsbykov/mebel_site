@@ -4,7 +4,6 @@ from django.conf import settings
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 import os
-import shutil
 import logging
 
 logger = logging.getLogger(__name__)
@@ -80,24 +79,26 @@ class ProjectImage(models.Model):
     def __str__(self):
         return f"Фото для {self.project.title}"
 
-    def delete(self, *args, **kwargs):
-        # Удаляем файл изображения с диска перед удалением записи из БД
-        if self.image:
-            image_str = str(self.image)
-            logger.debug(f"Удаляем файл '{image_str}' с диска.")
-            # Django сохраняет путь относительно MEDIA_ROOT
-            # Если в БД путь начинается с 'media/', убираем его, так как MEDIA_ROOT уже содержит 'media'
-            if image_str.startswith('media/'):
-                image_path = os.path.join(settings.MEDIA_ROOT, image_str.replace('media/', '', 1))
-            else:
-                image_path = os.path.join(settings.MEDIA_ROOT, image_str)
-            
-            if os.path.isfile(image_path):
+
+# Сигнал для удаления файла изображения при удалении объекта ProjectImage
+@receiver(pre_delete, sender=ProjectImage)
+def delete_project_image_file(sender, instance, **kwargs):
+    """Удаляет файл изображения с диска при удалении записи из БД (включая массовое удаление)"""
+    logger.debug(f"DELETE IMAGE FILE: Удаляем файл изображения: '{instance.image}'")
+    if instance.image:
+        image_str = str(instance.image)
+        # Django сохраняет путь относительно MEDIA_ROOT
+        # image.name уже содержит относительный путь к файлу внутри MEDIA_ROOT
+        image_path = os.path.join(settings.MEDIA_ROOT, image_str)
+        
+        if os.path.isfile(image_path):
+            try:
                 os.remove(image_path)
-                logger.info(f'Файл "{image_path}" удален.')
-            else:
-                logger.warning(f'Файл не найден: {image_path}')
-        super().delete(*args, **kwargs)
+                logger.info(f"DELETE IMAGE FILE: Файл '{image_path}' удален.")
+            except Exception as e:
+                logger.error(f"DELETE IMAGE FILE: Ошибка при попытке удаления файла {instance.image}: {e}")
+        else:
+            logger.warning(f"DELETE IMAGE FILE: Файл не найден: {image_path}")
 
 
 class Partner(models.Model):
@@ -113,23 +114,26 @@ class Partner(models.Model):
     def __str__(self):
         return self.name
 
-    def delete(self, *args, **kwargs):
-        # Удаляем файл логотипа с диска перед удалением записи из БД
-        if self.logo:
-            logo_str = str(self.logo)
-            logger.debug(f"Удаляем файл '{logo_str}' с диска.")
-            # Если в БД путь начинается с 'media/', убираем его, так как MEDIA_ROOT уже содержит 'media'
-            if logo_str.startswith('media/'):
-                logo_path = os.path.join(settings.MEDIA_ROOT, logo_str.replace('media/', '', 1))
-            else:
-                logo_path = os.path.join(settings.MEDIA_ROOT, logo_path)
-            
-            if os.path.isfile(logo_path):
+
+# Сигнал для удаления файла логотипа при удалении объекта Partner
+@receiver(pre_delete, sender=Partner)
+def delete_partner_logo_file(sender, instance, **kwargs):
+    """Удаляет файл логотипа с диска при удалении записи из БД (включая массовое удаление)"""
+    logger.debug(f"DELETE PARTNER LOGO: Удаляем файл логотипа: '{instance.logo}'")
+    if instance.logo:
+        logo_str = str(instance.logo)
+        # Django сохраняет путь относительно MEDIA_ROOT
+        # logo.name уже содержит относительный путь к файлу внутри MEDIA_ROOT
+        logo_path = os.path.join(settings.MEDIA_ROOT, logo_str)
+        
+        if os.path.isfile(logo_path):
+            try:
                 os.remove(logo_path)
-                logger.info(f'Файл "{logo_path}" удален.')
-            else:
-                logger.warning(f'Файл не найден: {logo_path}')
-        super().delete(*args, **kwargs)
+                logger.info(f"DELETE PARTNER LOGO: Файл '{logo_path}' удален.")
+            except Exception as e:
+                logger.error(f"DELETE PARTNER LOGO: Ошибка при попытке удаления файла {instance.logo}: {e}")
+        else:
+            logger.warning(f"DELETE PARTNER LOGO: Файл не найден: {logo_path}")
 
 
 class SiteSettings(models.Model):
@@ -173,11 +177,9 @@ def delete_project_images(sender, instance, **kwargs):
         logger.debug(f"DELETE IMAGES: Удаляем фото: '{image.image}'")
         if image.image:
             image_str = str(image.image)
-            # Если в БД путь начинается с 'media/', убираем его, так как MEDIA_ROOT уже содержит 'media'
-            if image_str.startswith('media/'):
-                image_path = os.path.join(settings.MEDIA_ROOT, image_str.replace('media/', '', 1))
-            else:
-                image_path = os.path.join(settings.MEDIA_ROOT, image_str)
+            # Django сохраняет путь относительно MEDIA_ROOT
+            # image.name уже содержит относительный путь к файлу внутри MEDIA_ROOT
+            image_path = os.path.join(settings.MEDIA_ROOT, image_str)
             
             if os.path.isfile(image_path):
                 try:
