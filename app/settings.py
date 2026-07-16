@@ -11,11 +11,13 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
-
+import logging
 from pathlib import Path
-from pickle import FALSE
-from venv import logger
 from dotenv import load_dotenv
+
+logging.basicConfig(level=logging.INFO)
+
+logger = logging.getLogger(__name__)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -33,9 +35,9 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False") == "True"
-logger.info("DEBUG = ", DEBUG, "\n")
+logger.info(f"LOGGING: DEBUG = {DEBUG}")
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-logger.info("LOG_LEVEL = ", LOG_LEVEL, "\n")
+logger.info(f"LOGGING: LOG_LEVEL = {LOG_LEVEL}")
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "127.0.0.1 localhost 0.0.0.0").split(" ")
 
@@ -216,7 +218,7 @@ LOGGING = {
     },
     'root': {
         'handlers': ['console'],
-        'level': LOG_LEVEL,
+        'level': 'DEBUG',
     },
     'loggers': {
         'social': {
