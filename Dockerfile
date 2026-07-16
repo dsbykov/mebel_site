@@ -6,7 +6,6 @@ WORKDIR /app
 # Устанавливаем зависимости для сборки
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Устанавливаем uv
@@ -51,7 +50,6 @@ COPY --from=builder --chown=django:django /app/app ./app/
 COPY --from=builder --chown=django:django /app/my_site ./my_site/
 COPY --from=builder --chown=django:django /app/manage.py ./
 COPY --from=builder --chown=django:django /app/staticfiles ./staticfiles/
-COPY --from=builder --chown=django:django /app/media ./media/
 
 # Экспортируем порт
 EXPOSE 8000
