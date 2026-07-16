@@ -19,7 +19,7 @@ COPY pyproject.toml uv.lock ./
 # Устанавливаем зависимости
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
-RUN uv pip install --system -r pyproject.toml
+RUN uv pip install -r pyproject.toml
 
 # Копируем исходный код
 COPY app/ ./app/
