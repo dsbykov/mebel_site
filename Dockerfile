@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Устанавливаем uv
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+RUN python -m pip install uv
 ENV PATH="/root/.cargo/bin:$PATH"
 
 # Копируем файлы конфигурации
