@@ -52,7 +52,6 @@ COPY --from=builder --chown=django:django /app/my_site ./my_site/
 COPY --from=builder --chown=django:django /app/manage.py ./
 COPY --from=builder --chown=django:django /app/staticfiles ./staticfiles/
 COPY --from=builder --chown=django:django /app/media ./media/
-COPY --from=builder --chown=django:django /app/.env ./.env
 
 # Экспортируем порт
 EXPOSE 8000
