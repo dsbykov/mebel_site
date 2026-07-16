@@ -6,7 +6,12 @@ WORKDIR /app
 # Устанавливаем зависимости для сборки
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    curl \
     && rm -rf /var/lib/apt/lists/*
+
+# Устанавливаем uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.cargo/bin:$PATH"
 
 # Копируем файлы конфигурации
 COPY pyproject.toml uv.lock ./
