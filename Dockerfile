@@ -26,8 +26,6 @@ COPY my_site/ ./my_site/
 COPY manage.py ./
 COPY start.sh ./
 
-# Запускаем collectstatic через python, где уже есть все пакеты
-RUN ./.venv/bin/python manage.py collectstatic --noinput
 
 # --- Runtime stage ---
 FROM python:3.12-slim
@@ -47,6 +45,8 @@ COPY --from=builder /app/manage.py /app/manage.py
 COPY --from=builder /app/start.sh /app/start.sh
 
 RUN chmod +x /app/start.sh
+
+RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
