@@ -27,8 +27,7 @@ COPY manage.py ./
 COPY start.sh ./
 
 # Запускаем collectstatic через python, где уже есть все пакеты
-RUN python manage.py collectstatic --noinput
-
+RUN ./.venv/bin/python manage.py collectstatic --noinput
 
 # --- Runtime stage ---
 FROM python:3.12-slim
