@@ -4,8 +4,17 @@
 
 set -e
 
-echo \"Применение миграций...\"
+echo "Применение миграций..."
 python manage.py migrate --noinput
 
+LOG_DIR="/tmp/logs"
+echo "Создание директории логов: $LOG_DIR"
+mkdir -p "$LOG_DIR"
+
 echo "Запуск сервера Uvicorn..."
-exec uvicorn app.asgi:application --host 0.0.0.0 --port 8000
+exec gunicorn app.asgi:application \
+    --bind 0.0.0.0:8000 \
+    --workers 4 \
+    --timeout 120 \
+    --log-file "$LOG_DIR/gunicorn.log" \
+    --error-logfile "$LOG_DIR/gunicorn_error.log"
