@@ -27,7 +27,7 @@ COPY manage.py ./
 COPY start.sh ./
 
 # ВАЖНО: запускаем collectstatic через python из venv, где уже есть Django
-RUN /opt/venv/bin/python manage.py collectstatic --noinput
+RUN /opt/venv/bin/python manage.py collectstatic
 
 
 # --- Runtime stage ---
