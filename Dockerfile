@@ -3,7 +3,7 @@ FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
-# Устанавливаем зависимости для сборки
+# Устанавливаем зависимости для с��орки
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
@@ -24,6 +24,7 @@ RUN uv pip install -r pyproject.toml
 COPY app/ ./app/
 COPY my_site/ ./my_site/
 COPY manage.py ./
+COPY start.sh ./
 
 # Собираем статические файлы
 RUN python manage.py collectstatic --noinput
@@ -50,6 +51,7 @@ COPY --from=builder --chown=django:django /app/app ./app/
 COPY --from=builder --chown=django:django /app/my_site ./my_site/
 COPY --from=builder --chown=django:django /app/manage.py ./
 COPY --from=builder --chown=django:django /app/staticfiles ./staticfiles/
+COPY --from=builder --chown=django:django /app/start.sh ./
 
 # Экспортируем порт
 EXPOSE 8000
@@ -57,5 +59,5 @@ EXPOSE 8000
 # Переключаемся на непривилегированного пользователя
 USER django
 
-# Запускаем приложение
-CMD ["uvicorn", "app.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
+# Запускаем приложение через скрипт (применяет миграции)
+CMD ["./start.sh"]
