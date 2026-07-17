@@ -35,7 +35,6 @@ services:
       - SOCIAL_AUTH_YANDEX_OAUTH2_KEY=${SOCIAL_AUTH_YANDEX_OAUTH2_KEY}
       - SOCIAL_AUTH_YANDEX_OAUTH2_SECRET=${SOCIAL_AUTH_YANDEX_OAUTH2_SECRET}
     volumes:
-      - ./media:/app/media:rw
       - static_volume:/app/staticfiles
       - media_volume:/app/media
     depends_on:
