@@ -9,16 +9,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Ставим uv в системный PATH (он будет управлять установкой зависимостей)
+# Ставим uv
 RUN python -m pip install --upgrade pip && pip install uv
 ENV PATH="/root/.local/bin:$PATH"
 
-# Копируем файлы зависимостей раньше кода (чтобы кэшировать слой при изменении кода)
+# Копируем файлы зависимостей раньше кода (для кэширования слоёв)
 COPY pyproject.toml uv.lock ./
 
-# Создаём venv и ставим зависимости через uv, указывая python из venv
-RUN uv venv /opt/venv \
-    && uv sync --frozen --python /opt/venv/bin/python
+# Синхронизируем зависимости прямо в окружение builder
+# --frozen требует, чтобы uv.lock был актуальным
+RUN uv sync --frozen
 
 # Копируем исходный код
 COPY app/ ./app/
@@ -26,8 +26,8 @@ COPY my_site/ ./my_site/
 COPY manage.py ./
 COPY start.sh ./
 
-# ВАЖНО: запускаем collectstatic через python из venv, где уже есть Django
-RUN /opt/venv/bin/python manage.py collectstatic
+# Запускаем collectstatic через python, где уже есть все пакеты
+RUN python manage.py collectstatic --noinput
 
 
 # --- Runtime stage ---
@@ -42,9 +42,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN groupadd -r django && useradd -r -g django django
 
-# Копируем виртуальное окружение из builder
-COPY --from=builder /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+# Копируем установленные пакеты из builder
+# Это даёт минимальный рантайм с теми же зависимостями
+COPY --from=builder /root/.local /root/.local
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+ENV PATH="/root/.local/bin:/usr/local/bin:$PATH"
 
 # Копируем приложение и статику с правами пользователя
 COPY --from=builder --chown=django:django /app/app ./app/
