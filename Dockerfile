@@ -25,7 +25,6 @@ COPY app/ ./app/
 COPY my_site/ ./my_site/
 COPY manage.py ./
 COPY start.sh ./
-COPY static/ ./static/
 
 
 # --- Runtime stage ---
@@ -44,11 +43,8 @@ COPY --from=builder /app/app /app/app
 COPY --from=builder /app/my_site /app/my_site
 COPY --from=builder /app/manage.py /app/manage.py
 COPY --from=builder /app/start.sh /app/start.sh
-COPY --from=builder /app/static /app/static
 
 RUN chmod +x /app/start.sh
-
-RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
