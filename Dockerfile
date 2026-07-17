@@ -1,9 +1,9 @@
-# Сборочный этап
+# Сбороч��ый этап
 FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
-# Устанавливаем зависимости для с��орки
+# Устанавливаем зависимости для сборки
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
@@ -52,6 +52,9 @@ COPY --from=builder --chown=django:django /app/my_site ./my_site/
 COPY --from=builder --chown=django:django /app/manage.py ./
 COPY --from=builder --chown=django:django /app/staticfiles ./staticfiles/
 COPY --from=builder --chown=django:django /app/start.sh ./
+
+# Даем права на выполнение для скрипта запуска
+RUN chmod +x /app/start.sh
 
 # Экспортируем порт
 EXPOSE 8000
