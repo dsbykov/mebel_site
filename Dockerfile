@@ -17,8 +17,9 @@ ENV PATH="/root/.local/bin:$PATH"
 COPY pyproject.toml uv.lock ./
 
 # Собираем зависимости в изолированную директорию, чтобы потом скопировать её целиком
-RUN uv pip compile -o requirements.txt pyproject.toml \
-    && uv pip install -r requirements.txt --root /opt/venv --no-compile
+RUN uv pip install --locked --system --no-compile . 2>&1 || \
+    uv pip install --locked --root /opt/venv . && \
+    find /opt/venv -name "*.pyc" -delete
 
 # Копируем исходный код
 COPY app/ ./app/
