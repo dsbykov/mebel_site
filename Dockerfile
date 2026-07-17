@@ -18,8 +18,7 @@ COPY pyproject.toml uv.lock ./
 
 # Создаём venv и синхронизируем зависимости
 RUN uv venv /opt/venv \
-    && . /opt/venv/bin/activate \
-    && uv sync --frozen
+    && /opt/venv/bin/python -m uv sync --frozen
 
 # Копируем исходный код
 COPY app/ ./app/
