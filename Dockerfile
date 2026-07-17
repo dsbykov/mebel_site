@@ -25,7 +25,7 @@ COPY app/ ./app/
 COPY my_site/ ./my_site/
 COPY manage.py ./
 COPY start.sh ./
-COPY static ./static
+COPY static/ ./static/
 
 
 # --- Runtime stage ---
