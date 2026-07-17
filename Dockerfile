@@ -16,11 +16,10 @@ ENV PATH="/root/.local/bin:$PATH"
 # Копируем файлы зависимостей раньше кода — чтобы кэш слоёв работал при изменении кода
 COPY pyproject.toml uv.lock ./
 
-# 🔧 Генерируем requirements.txt из pyproject.toml и uv.lock
-RUN uv pip compile pyproject.toml -o requirements.txt
-
-# 🔧 Устанавливаем зависимости из requirements.txt
-RUN uv pip install /opt/venv -r requirements.txt
+# Создаём venv и синхронизируем зависимости
+RUN uv venv /opt/venv \
+    && . /opt/venv/bin/activate \
+    && uv sync --frozen
 
 # Копируем исходный код
 COPY app/ ./app/
