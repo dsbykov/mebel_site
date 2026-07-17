@@ -22,8 +22,13 @@ logger = logging.getLogger(__name__)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Загружаем переменные из .env файла, если он существует (для локальной разработки)
 dotenv_path = os.path.join(BASE_DIR, '.env')
-load_dotenv(dotenv_path=dotenv_path, verbose=True, override=True)
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path=dotenv_path, verbose=True, override=True)
+else:
+    # Для production: переменные берутся из окружения (docker-compose.yml)
+    logger.info("Файл .env не найден, переменные будут взяты из окружения")
 
 
 

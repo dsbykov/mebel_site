@@ -11,8 +11,8 @@ LOG_DIR="/tmp/logs"
 echo "Создание директории логов: $LOG_DIR"
 mkdir -p "$LOG_DIR"
 
-echo "Запуск сервера Uvicorn..."
-exec gunicorn app.asgi:application \
+echo "Запуск сервера Gunicorn..."
+exec gunicorn app.wsgi:application \
     --bind 0.0.0.0:8000 \
     --workers 4 \
     --timeout 120 \

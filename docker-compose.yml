@@ -12,7 +12,7 @@ services:
     networks:
       - app_network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -d \"$${POSTGRES_DB}\" -U \"$${POSTGRES_USER}\"" ]
+      test: [ "CMD-SHELL", "pg_isready -d \"\$\${POSTGRES_DB}\" -U \"\$\${POSTGRES_USER}\"" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -22,7 +22,6 @@ services:
     image: ghcr.io/dsbykov/mebel_site:latest
     build: .
     container_name: mebel_site_app
-    env_file: .env
     restart: always
     environment:
       - DEBUG=${DEBUG:-False}
@@ -33,6 +32,8 @@ services:
       - POSTGRES_HOST=${POSTGRES_HOST:-db}
       - POSTGRES_PORT=5432
       - ALLOWED_HOSTS=${ALLOWED_HOSTS:-127.0.0.1 localhost 0.0.0.0}
+      - SOCIAL_AUTH_YANDEX_OAUTH2_KEY=${SOCIAL_AUTH_YANDEX_OAUTH2_KEY}
+      - SOCIAL_AUTH_YANDEX_OAUTH2_SECRET=${SOCIAL_AUTH_YANDEX_OAUTH2_SECRET}
     volumes:
       - ./media:/app/media:rw
       - ./staticfiles:/app/staticfiles:rw
