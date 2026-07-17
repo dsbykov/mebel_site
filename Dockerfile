@@ -34,31 +34,20 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    libpq5 \
-    && rm -rf /var/lib/apt/lists/*
+# Копируем виртуальное окружение из builder
+COPY --from=builder /app/.venv /app/.venv
 
-RUN groupadd -r django && useradd -r -g django django
+# Важно: сказать системе использовать python из venv
+ENV PATH="/app/.venv/bin:$PATH"
 
-# Копируем установленные пакеты из builder
-# Это даёт минимальный рантайм с теми же зависимостями
-COPY --from=builder /root/.local /root/.local
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
-ENV PATH="/root/.local/bin:/usr/local/bin:$PATH"
-
-# Копируем приложение и статику с правами пользователя
-COPY --from=builder --chown=django:django /app/app ./app/
-COPY --from=builder --chown=django:django /app/my_site ./my_site/
-COPY --from=builder --chown=django:django /app/manage.py ./
-COPY --from=builder --chown=django:django /app/staticfiles ./staticfiles/
-COPY --from=builder --chown=django:django /app/start.sh ./
+# Дальше копируй свои файлы и запускай
+COPY --from=builder /app/app /app/app
+COPY --from=builder /app/my_site /app/my_site
+COPY --from=builder /app/manage.py /app/manage.py
+COPY --from=builder /app/start.sh /app/start.sh
 
 RUN chmod +x /app/start.sh
 
 EXPOSE 8000
 
-USER django
-
-CMD ["./start.sh"]
+CMD ["/app/start.sh"]
