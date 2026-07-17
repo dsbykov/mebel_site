@@ -16,9 +16,9 @@ ENV PATH="/root/.local/bin:$PATH"
 # Копируем файлы зависимостей раньше кода — чтобы кэш слоёв работал при изменении кода
 COPY pyproject.toml uv.lock ./
 
-# Создаём venv и синхронизируем зависимости
+# Создаём venv и ставим зависимости через uv, указывая python из venv
 RUN uv venv /opt/venv \
-    && /opt/venv/bin/python -m uv sync --frozen
+    && uv sync --frozen --python /opt/venv/bin/python
 
 # Копируем исходный код
 COPY app/ ./app/
