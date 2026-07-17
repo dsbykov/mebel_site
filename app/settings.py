@@ -190,10 +190,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-
-# STATICFILES_DIRS = [
-#     BASE_DIR / 'static',
-# ]
+# Папки, где лежат исходные статические файлы
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 # ← путь, куда collectstatic копирует всё
 STATIC_ROOT = BASE_DIR / 'staticfiles'
