@@ -3,17 +3,17 @@ FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
-# Устанавливаем только минимально необходимые инструменты для сборки зависимостей
+# Минимальные инструменты для сборки
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Ставим uv и сразу используем его (не нужно venv в билдере)
+# Ставим uv в системный PATH (он будет управлять установкой зависимостей)
 RUN python -m pip install --upgrade pip && pip install uv
 ENV PATH="/root/.local/bin:$PATH"
 
-# Копируем файлы зависимостей раньше кода — чтобы кэш слоёв работал при изменении кода
+# Копируем файлы зависимостей раньше кода (чтобы кэшировать слой при изменении кода)
 COPY pyproject.toml uv.lock ./
 
 # Создаём venv и ставим зависимости через uv, указывая python из venv
@@ -26,28 +26,27 @@ COPY my_site/ ./my_site/
 COPY manage.py ./
 COPY start.sh ./
 
-# Выполняем collectstatic
-RUN python manage.py collectstatic --noinput
+# ВАЖНО: запускаем collectstatic через python из venv, где уже есть Django
+RUN /opt/venv/bin/python manage.py collectstatic --noinput
+
 
 # --- Runtime stage ---
 FROM python:3.12-slim
 
 WORKDIR /app
 
-# Минимальные рантайм-зависимости
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
-# Создаём непривилегированного пользователя и группу
 RUN groupadd -r django && useradd -r -g django django
 
 # Копируем виртуальное окружение из builder
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Копируем приложение и статику, сразу с правами пользователя
+# Копируем приложение и статику с правами пользователя
 COPY --from=builder --chown=django:django /app/app ./app/
 COPY --from=builder --chown=django:django /app/my_site ./my_site/
 COPY --from=builder --chown=django:django /app/manage.py ./
