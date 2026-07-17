@@ -20,7 +20,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv pip compile pyproject.toml -o requirements.txt
 
 # 🔧 Устанавливаем зависимости из requirements.txt
-RUN uv pip install --system /opt/venv -r requirements.txt
+RUN uv pip install /opt/venv -r requirements.txt
 
 # Копируем исходный код
 COPY app/ ./app/
