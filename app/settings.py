@@ -202,6 +202,16 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://tm2d.ru",
+    "https://www.tm2d.ru",
+]
+
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
