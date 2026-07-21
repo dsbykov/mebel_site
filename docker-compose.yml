@@ -53,7 +53,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro                 # bind mount, только чтение
-      - ./certbot:/var/www/certbot:ro
+      - ./certbot/www:/var/www/certbot:ro
       - ./nginx_ssl:/etc/nginx/ssl:ro
       - static_volume:/app/staticfiles
       - media_volume:/app/media
@@ -65,8 +65,13 @@ services:
   certbot:
     image: certbot/certbot
     container_name: mebel_site_certbot
+    # The VPS cron job runs this one-shot service explicitly.
+    # The profile prevents `docker compose up -d` from starting it with no args.
+    profiles:
+      - tools
     volumes:
-      - ./certbot:/var/www/certbot
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
       - ./nginx_ssl:/etc/nginx/ssl
 
 networks:

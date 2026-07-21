@@ -26,6 +26,15 @@ jobs:
       - name: Push Docker image
         run: docker push ghcr.io/${{ github.repository }}:latest
 
+      - name: Upload deployment configuration to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "docker-compose.yml,nginx.conf"
+          target: /home/user1/django
+
       - name: Deploy to VPS
         uses: appleboy/ssh-action@master
         with:
@@ -38,6 +47,8 @@ jobs:
             docker pull ghcr.io/${{ github.repository }}:latest
 
             cd /home/user1/django
+
+            mkdir -p certbot/www certbot/conf nginx_ssl
 
             docker compose down && docker compose up -d
 
