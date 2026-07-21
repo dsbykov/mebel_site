@@ -22,8 +22,13 @@ logger = logging.getLogger(__name__)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Загружаем переменные из .env файла, если он существует (для локальной разработки)
 dotenv_path = os.path.join(BASE_DIR, '.env')
-load_dotenv(dotenv_path=dotenv_path, verbose=True, override=True)
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path=dotenv_path, verbose=True, override=True)
+else:
+    # Для production: переменные берутся из окружения (docker-compose.yml)
+    logger.info("Файл .env не найден, переменные будут взяты из окружения")
 
 
 
@@ -183,8 +188,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
+# Папки, где лежат исходные статические файлы
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]

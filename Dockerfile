@@ -1,59 +1,53 @@
-# Сборочный этап
+# --- Builder stage ---
 FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
-# Устанавливаем зависимости для сборки
+# Минимальные инструменты для сборки
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Копируем файлы конфигурации
+# Ставим uv
+RUN python -m pip install --upgrade pip && pip install uv
+ENV PATH="/root/.local/bin:$PATH"
+
+# Копируем файлы зависимостей раньше кода (для кэширования слоёв)
 COPY pyproject.toml uv.lock ./
 
-# Устанавливаем зависимости
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-RUN uv pip install --system -r pyproject.toml
+# Синхронизируем зависимости прямо в окружение builder
+# --frozen требует, чтобы uv.lock был актуальным
+RUN uv sync --frozen
 
 # Копируем исходный код
 COPY app/ ./app/
 COPY my_site/ ./my_site/
+COPY static/ ./static/ 
 COPY manage.py ./
+COPY start.sh ./
 
-# Собираем статические файлы
-RUN python manage.py collectstatic --noinput
 
-# Финальный этап
+# --- Runtime stage ---
 FROM python:3.12-slim
 
 WORKDIR /app
 
-# Устанавливаем зависимости для выполнения
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Создаем пользователя
-RUN groupadd -r django && useradd -r -g django django
-
 # Копируем виртуальное окружение из builder
-COPY --from=builder /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+COPY --from=builder /app/.venv /app/.venv
 
-# Копируем приложение
-COPY --from=builder --chown=django:django /app/app ./app/
-COPY --from=builder --chown=django:django /app/my_site ./my_site/
-COPY --from=builder --chown=django:django /app/manage.py ./
-COPY --from=builder --chown=django:django /app/staticfiles ./staticfiles/
-COPY --from=builder --chown=django:django /app/media ./media/
-COPY --from=builder --chown=django:django /app/.env ./.env
+# Важно: сказать системе использовать python из venv
+ENV PATH="/app/.venv/bin:$PATH"
 
-# Экспортируем порт
+# Дальше копируй свои файлы и запускай
+COPY --from=builder /app/app /app/app
+COPY --from=builder /app/my_site /app/my_site
+COPY --from=builder /app/manage.py /app/manage.py
+COPY --from=builder /app/start.sh /app/start.sh
+COPY --from=builder /app/static /app/static
+
+RUN chmod +x /app/start.sh
+
 EXPOSE 8000
 
-# Переключаемся на непривилегированного пользователя
-USER django
-
-# Запускаем приложение
-CMD ["uvicorn", "app.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/app/start.sh"]
