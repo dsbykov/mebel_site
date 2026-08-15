@@ -1,0 +1,31 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title }}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/custom_admin.css' %}">
+{% endblock %}
+
+{% block branding %}
+<div class="admin-brand">
+    <a href="{% url 'admin:index' %}" class="admin-brand-name">ИП <span>Быков</span></a>
+    <span class="admin-brand-caption">Панель управления</span>
+</div>
+{% if user.is_anonymous %}{% include "admin/color_theme_toggle.html" %}{% endif %}
+{% endblock %}
+
+{% block welcome-msg %}
+<span class="admin-user-name">{{ user.get_full_name|default:user.get_username }}</span>
+{% endblock %}
+
+{% block userlinks %}
+<a href="/" target="_blank" rel="noopener noreferrer" class="site-preview-link">Открыть сайт ↗</a>
+{% if user.has_usable_password %}<a href="{% url 'admin:password_change' %}">Сменить пароль</a>{% endif %}
+<form id="logout-form" method="post" action="{% url 'admin:logout' %}">
+    {% csrf_token %}
+    <button type="submit">Выйти</button>
+</form>
+{% include "admin/color_theme_toggle.html" %}
+{% endblock %}
