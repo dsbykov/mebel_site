@@ -101,13 +101,38 @@ def delete_project_image_file(sender, instance, **kwargs):
             logger.warning(f"DELETE IMAGE FILE: Файл не найден: {image_path}")
 
 
+class PartnerCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True, verbose_name="Название раздела")
+    sort_order = models.PositiveIntegerField(default=0, verbose_name="Порядок отображения")
+
+    class Meta:
+        ordering = ('sort_order', 'name')
+        verbose_name = "Раздел партнёров"
+        verbose_name_plural = "Разделы партнёров"
+
+    def __str__(self):
+        return self.name
+
+
 class Partner(models.Model):
     name = models.CharField(max_length=100, verbose_name="Имя партнёра")
     website_url = models.URLField(verbose_name="Сайт партнёра")
+    description = models.TextField(blank=True, verbose_name="Описание")
+    category = models.ForeignKey(
+        PartnerCategory,
+        on_delete=models.PROTECT,
+        related_name='partners',
+        null=True,
+        verbose_name="Раздел",
+        help_text="Выберите существующий раздел или создайте новый кнопкой «+».",
+    )
     logo = models.ImageField(upload_to='partners/', blank=True, null=True, verbose_name="Логотип")
-    is_active = models.BooleanField(default=True)
+    preview_image_url = models.URLField(blank=True, max_length=1000, editable=False, verbose_name="Изображение со страницы")
+    sort_order = models.PositiveIntegerField(default=0, verbose_name="Порядок отображения")
+    is_active = models.BooleanField(default=True, verbose_name="Показывать на сайте")
 
     class Meta:
+        ordering = ('category__sort_order', 'category__name', 'sort_order', 'name')
         verbose_name = "Партнёр"
         verbose_name_plural = "Партнёры"
 

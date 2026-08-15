@@ -1,5 +1,9 @@
 from django.contrib import admin
-from .models import UserProfile, Review, Project, ProjectImage, Partner, SiteSettings
+from django import forms
+from django.contrib import messages
+
+from .models import UserProfile, Review, Project, ProjectImage, Partner, PartnerCategory, SiteSettings
+from .partner_preview import fetch_preview_image
 
 
 @admin.register(UserProfile)
@@ -33,11 +37,53 @@ class ProjectImageAdmin(admin.ModelAdmin):
     list_filter = ('project',)
 
 
+@admin.register(PartnerCategory)
+class PartnerCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'sort_order')
+    list_editable = ('sort_order',)
+    search_fields = ('name',)
+
+
+class PartnerAdminForm(forms.ModelForm):
+    class Meta:
+        model = Partner
+        fields = '__all__'
+
+    def clean_category(self):
+        category = self.cleaned_data.get('category')
+        if category is None:
+            raise forms.ValidationError('Выберите раздел партнёра.')
+        return category
+
+
 @admin.register(Partner)
 class PartnerAdmin(admin.ModelAdmin):
-    list_display = ('name', 'website_url', 'is_active')
-    search_fields = ('name',)
-    list_filter = ('is_active',)
+    form = PartnerAdminForm
+    list_display = ('name', 'category', 'website_url', 'sort_order', 'is_active')
+    list_editable = ('sort_order', 'is_active')
+    search_fields = ('name', 'description', 'website_url')
+    list_filter = ('category', 'is_active')
+    readonly_fields = ('preview_image_url',)
+    fieldsets = (
+        (None, {'fields': ('name', 'category', 'website_url', 'description')}),
+        ('Карточка', {
+            'fields': ('logo', 'preview_image_url'),
+            'description': 'Если логотип не загружен, изображение карточки будет автоматически получено со страницы партнёра.',
+        }),
+        ('Отображение', {'fields': ('sort_order', 'is_active')}),
+    )
+
+    def save_model(self, request, obj, form, change):
+        should_refresh = not obj.logo and (not obj.preview_image_url or 'website_url' in form.changed_data)
+        if should_refresh:
+            try:
+                obj.preview_image_url = fetch_preview_image(obj.website_url) or ''
+                if not obj.preview_image_url:
+                    messages.warning(request, 'Сайт партнёра не предоставил изображение для карточки. Будет показана фирменная заглушка.')
+            except (OSError, ValueError) as error:
+                obj.preview_image_url = ''
+                messages.warning(request, f'Не удалось получить изображение со страницы: {error}')
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(SiteSettings)

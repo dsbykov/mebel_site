@@ -1,0 +1,16 @@
+<a class="partner-card" href="{{ partner.website_url }}" target="_blank" rel="noopener noreferrer" aria-label="Открыть сайт {{ partner.name }} в новой вкладке">
+    <div class="partner-card-image">
+        {% if partner.logo %}
+            <img src="{{ partner.logo.url }}" alt="Логотип {{ partner.name }}" loading="lazy">
+        {% elif partner.preview_image_url %}
+            <img src="{{ partner.preview_image_url }}" alt="{{ partner.name }}" loading="lazy" referrerpolicy="no-referrer">
+        {% else %}
+            <span class="partner-card-placeholder" aria-hidden="true">{{ partner.name|first|upper }}</span>
+        {% endif %}
+    </div>
+    <div class="partner-card-content">
+        <h4>{{ partner.name }}</h4>
+        {% if partner.description %}<p>{{ partner.description }}</p>{% endif %}
+        <span class="partner-card-link">Перейти на сайт <span aria-hidden="true">↗</span></span>
+    </div>
+</a>

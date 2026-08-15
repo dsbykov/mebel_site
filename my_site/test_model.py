@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from .models import UserProfile, Review, Project, ProjectImage, Partner, SiteSettings
+from .models import UserProfile, Review, Project, ProjectImage, Partner, PartnerCategory, SiteSettings
 
 
 class UserProfileModelTest(TestCase):
@@ -145,16 +145,30 @@ class PartnerModelTest(TestCase):
     
     def test_partner_creation(self):
         """Проверка создания партнера"""
+        category = PartnerCategory.objects.create(name='Фурнитура')
         partner = Partner.objects.create(
             name='Тестовый партнёр',
             website_url='https://partner.com',
+            description='Петли и направляющие',
+            category=category,
             is_active=True
         )
         
         self.assertEqual(partner.name, 'Тестовый партнёр')
         self.assertEqual(partner.website_url, 'https://partner.com')
+        self.assertEqual(partner.category, category)
+        self.assertEqual(partner.description, 'Петли и направляющие')
         self.assertTrue(partner.is_active)
         self.assertEqual(str(partner), 'Тестовый партнёр')
+
+    def test_partner_categories_ordering(self):
+        PartnerCategory.objects.create(name='Столешницы', sort_order=20)
+        PartnerCategory.objects.create(name='Фасады', sort_order=10)
+
+        self.assertEqual(
+            list(PartnerCategory.objects.values_list('name', flat=True)),
+            ['Фасады', 'Столешницы'],
+        )
 
 
 class SiteSettingsModelTest(TestCase):

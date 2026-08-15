@@ -3,7 +3,8 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Project, SiteSettings, Review, UserProfile
+from django.db import models
+from .models import Project, SiteSettings, Review, UserProfile, PartnerCategory, Partner
 from .forms import ReviewForm
 from .utils import login_required
 import logging 
@@ -45,6 +46,16 @@ def load_reviews(request):
 def home(request):
     projects = Project.objects.prefetch_related('images').all()
     site_settings = SiteSettings.objects.first()
+    partner_categories = PartnerCategory.objects.filter(
+        partners__is_active=True,
+    ).prefetch_related(
+        models.Prefetch(
+            'partners',
+            queryset=Partner.objects.filter(is_active=True).order_by('sort_order', 'name'),
+            to_attr='active_partners',
+        )
+    ).distinct().order_by('sort_order', 'name')
+    uncategorized_partners = Partner.objects.filter(is_active=True, category__isnull=True).order_by('sort_order', 'name')
     reviews_list = Review.objects.filter(is_published=True).order_by('-created_at')
     
     # Пагинация: по 3 отзыва на страницу
@@ -65,6 +76,8 @@ def home(request):
         {
             'projects': projects,
             'site_settings': site_settings,
+            'partner_categories': partner_categories,
+            'uncategorized_partners': uncategorized_partners,
             'reviews': reviews,
             'reviews_paginator': paginator,
             'reviews_json': {

@@ -1,0 +1,30 @@
+{% if partner_categories or uncategorized_partners %}
+<section id="partners" class="partners">
+    <div class="container">
+        <h2>Наши партнёры</h2>
+        <p class="partners-intro">Проверенные производители фурнитуры и материалов, с которыми мы работаем.</p>
+        {% for category in partner_categories %}
+            {% if category.active_partners %}
+                <div class="partner-category">
+                    <h3>{{ category.name }}</h3>
+                    <div class="partners-grid">
+                        {% for partner in category.active_partners %}
+                            {% include "partials/partner_card.html" %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+        {% if uncategorized_partners %}
+            <div class="partner-category">
+                <h3>Другие партнёры</h3>
+                <div class="partners-grid">
+                    {% for partner in uncategorized_partners %}
+                        {% include "partials/partner_card.html" %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
