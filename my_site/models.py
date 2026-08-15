@@ -10,14 +10,14 @@ logger = logging.getLogger(__name__)
 
 
 class UserProfile(models.Model):
-    user = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='userprofile', null=True, blank=True)
-    yandex_id = models.CharField(max_length=255, unique=True)  # ID из Яндекса
-    username = models.CharField(max_length=150, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
-    first_name = models.CharField(max_length=150, blank=True, null=True)
-    last_name = models.CharField(max_length=150, blank=True, null=True)
-    avatar_url = models.URLField(blank=True, null=True)
-    date_joined = models.DateTimeField(auto_now_add=True)
+    user = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='userprofile', null=True, blank=True, verbose_name="Пользователь")
+    yandex_id = models.CharField(max_length=255, unique=True, verbose_name="ID Яндекса")
+    username = models.CharField(max_length=150, blank=True, null=True, verbose_name="Имя пользователя")
+    email = models.EmailField(blank=True, null=True, verbose_name="Электронная почта")
+    first_name = models.CharField(max_length=150, blank=True, null=True, verbose_name="Имя")
+    last_name = models.CharField(max_length=150, blank=True, null=True, verbose_name="Фамилия")
+    avatar_url = models.URLField(blank=True, null=True, verbose_name="Ссылка на аватар")
+    date_joined = models.DateTimeField(auto_now_add=True, verbose_name="Дата регистрации")
 
     class Meta:
         verbose_name = "Профиль пользователя"
@@ -28,15 +28,15 @@ class UserProfile(models.Model):
 
 
 class Review(models.Model):
-    author = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='reviews')
-    text = models.TextField(verbose_name="Текст отзыва")
+    author = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='reviews', verbose_name="Автор")
+    text = models.TextField(verbose_name="Текст отзыва", help_text="Текст отображается в разделе «Отзывы наших клиентов» после публикации.")
     rating = models.PositiveSmallIntegerField(
         verbose_name="Оценка",
         validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    is_published = models.BooleanField(default=False)  # можно модерировать, по умолчанию не опубликован, требует модерации
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата изменения")
+    is_published = models.BooleanField(default=False, verbose_name="Опубликован", help_text="Включите, чтобы отзыв появился на главной странице.")
 
     class Meta:
         verbose_name = "Отзыв"
@@ -47,16 +47,17 @@ class Review(models.Model):
     
 
 class Project(models.Model):
-    title = models.CharField(max_length=200, verbose_name="Название проекта")
-    description = models.TextField(blank=True, verbose_name="Описание")
-    created_at = models.DateTimeField(auto_now_add=True)
+    title = models.CharField(max_length=200, verbose_name="Название проекта", help_text="Отображается в карточке и окне просмотра проекта.")
+    description = models.TextField(blank=True, verbose_name="Описание", help_text="Кратко расскажите о задаче, материалах и результате работы.")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
     featured_review = models.OneToOneField(
         Review,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='featured_in_project',
-        verbose_name="Рекомендуемый отзыв"
+        verbose_name="Рекомендуемый отзыв",
+        help_text="Необязательный отзыв, связанный с этим проектом.",
     )
 
     class Meta:
@@ -69,8 +70,8 @@ class Project(models.Model):
 
 class ProjectImage(models.Model):
     project = models.ForeignKey(Project, related_name='images', on_delete=models.CASCADE, verbose_name="Проект")
-    image = models.ImageField(upload_to='portfolio/', verbose_name="Файл изображения")
-    alt_text = models.CharField(max_length=200, blank=True, verbose_name="Описание изображения")
+    image = models.ImageField(upload_to='portfolio/', verbose_name="Файл изображения", help_text="Фотография будет показана в карточке и галерее проекта.")
+    alt_text = models.CharField(max_length=200, blank=True, verbose_name="Описание изображения", help_text="Краткое описание фотографии для доступности и поисковых систем.")
 
     class Meta:
         verbose_name = "Фото"
@@ -102,8 +103,8 @@ def delete_project_image_file(sender, instance, **kwargs):
 
 
 class PartnerCategory(models.Model):
-    name = models.CharField(max_length=100, unique=True, verbose_name="Название раздела")
-    sort_order = models.PositiveIntegerField(default=0, verbose_name="Порядок отображения")
+    name = models.CharField(max_length=100, unique=True, verbose_name="Название раздела", help_text="Например: «Фурнитура», «Фасады» или «Столешницы».")
+    sort_order = models.PositiveIntegerField(default=0, verbose_name="Порядок отображения", help_text="Чем меньше число, тем выше раздел расположен на странице.")
 
     class Meta:
         ordering = ('sort_order', 'name')
@@ -115,9 +116,9 @@ class PartnerCategory(models.Model):
 
 
 class Partner(models.Model):
-    name = models.CharField(max_length=100, verbose_name="Имя партнёра")
-    website_url = models.URLField(verbose_name="Сайт партнёра")
-    description = models.TextField(blank=True, verbose_name="Описание")
+    name = models.CharField(max_length=100, verbose_name="Название партнёра", help_text="Отображается поверх карточки партнёра.")
+    website_url = models.URLField(verbose_name="Сайт партнёра", help_text="Полная ссылка, которая откроется при нажатии на карточку.")
+    description = models.TextField(blank=True, verbose_name="Описание", help_text="Короткое описание продукции или услуг партнёра; рекомендуется 1–2 предложения.")
     category = models.ForeignKey(
         PartnerCategory,
         on_delete=models.PROTECT,
@@ -126,9 +127,9 @@ class Partner(models.Model):
         verbose_name="Раздел",
         help_text="Выберите существующий раздел или создайте новый кнопкой «+».",
     )
-    logo = models.ImageField(upload_to='partners/', blank=True, null=True, verbose_name="Логотип")
+    logo = models.ImageField(upload_to='partners/', blank=True, null=True, verbose_name="Логотип", help_text="Необязательно. Если файл не выбран, сайт попробует получить изображение по ссылке партнёра.")
     preview_image_url = models.URLField(blank=True, max_length=1000, editable=False, verbose_name="Изображение со страницы")
-    sort_order = models.PositiveIntegerField(default=0, verbose_name="Порядок отображения")
+    sort_order = models.PositiveIntegerField(default=0, verbose_name="Порядок отображения", help_text="Чем меньше число, тем раньше карточка показана внутри раздела.")
     is_active = models.BooleanField(default=True, verbose_name="Показывать на сайте")
 
     class Meta:
@@ -162,11 +163,11 @@ def delete_partner_logo_file(sender, instance, **kwargs):
 
 
 class SiteSettings(models.Model):
-    business_description = models.TextField(verbose_name="Описание деятельности")
-    phone = models.CharField(max_length=20, blank=True, verbose_name="Номер мобильного")
-    email = models.EmailField(verbose_name="Электронная почта")
-    address = models.CharField(max_length=255, blank=True, verbose_name="Адресс компании")
-    yandex_map_link = models.URLField(blank=True, verbose_name="Ссылка на Яндекс.Карты")
+    business_description = models.TextField(verbose_name="Описание деятельности", help_text="Основной текст о компании на главной странице.")
+    phone = models.CharField(max_length=20, blank=True, verbose_name="Номер телефона", help_text="Контактный номер в блоке «Контакты».")
+    email = models.EmailField(verbose_name="Электронная почта", help_text="Контактный адрес электронной почты на сайте.")
+    address = models.CharField(max_length=255, blank=True, verbose_name="Адрес компании", help_text="Фактический адрес, отображаемый в контактах.")
+    yandex_map_link = models.URLField(blank=True, verbose_name="Ссылка на Яндекс.Карты", help_text="Полная ссылка на организацию или точку на Яндекс.Картах.")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата изменения")
 
     class Meta:

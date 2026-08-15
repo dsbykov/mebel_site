@@ -1,0 +1,74 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static log %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">{% endblock %}
+{% block coltype %}colMS{% endblock %}
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <section class="admin-welcome-card">
+        <div>
+            <span class="admin-eyebrow">Рабочая панель</span>
+            <h1>Что нужно обновить?</h1>
+            <p>Выберите задачу — все основные разделы сайта находятся на одном экране.</p>
+        </div>
+        <a href="/" target="_blank" rel="noopener noreferrer" class="admin-preview-button">Открыть сайт ↗</a>
+    </section>
+    <div class="admin-task-grid">
+        {% if perms.my_site.view_project %}
+        <section class="admin-task-card admin-task-card--projects">
+            <span class="admin-task-icon" aria-hidden="true">П</span>
+            <div class="admin-task-copy"><h2>Проекты</h2><p>Портфолио, описания и фотографии выполненных работ.</p></div>
+            <div class="admin-task-actions">
+                <a href="{% url 'admin:my_site_project_changelist' %}">Все проекты</a>
+                {% if perms.my_site.add_project %}<a class="admin-task-add" href="{% url 'admin:my_site_project_add' %}">+ Добавить</a>{% endif %}
+            </div>
+        </section>
+        {% endif %}
+        {% if perms.my_site.view_review %}
+        <section class="admin-task-card admin-task-card--reviews">
+            <span class="admin-task-icon" aria-hidden="true">О</span>
+            <div class="admin-task-copy"><h2>Отзывы</h2><p>Проверка, публикация и скрытие отзывов клиентов.</p></div>
+            <div class="admin-task-actions"><a href="{% url 'admin:my_site_review_changelist' %}">Модерировать</a></div>
+        </section>
+        {% endif %}
+        {% if perms.my_site.view_partner %}
+        <section class="admin-task-card admin-task-card--partners">
+            <span class="admin-task-icon" aria-hidden="true">Н</span>
+            <div class="admin-task-copy"><h2>Партнёры</h2><p>Карточки поставщиков, категории и порядок отображения.</p></div>
+            <div class="admin-task-actions">
+                <a href="{% url 'admin:my_site_partner_changelist' %}">Все партнёры</a>
+                {% if perms.my_site.add_partner %}<a class="admin-task-add" href="{% url 'admin:my_site_partner_add' %}">+ Добавить</a>{% endif %}
+            </div>
+        </section>
+        {% endif %}
+        {% if perms.my_site.view_sitesettings %}
+        <section class="admin-task-card admin-task-card--settings">
+            <span class="admin-task-icon" aria-hidden="true">К</span>
+            <div class="admin-task-copy"><h2>Контакты и компания</h2><p>Телефон, адрес, почта и описание деятельности.</p></div>
+            <div class="admin-task-actions"><a href="{% url 'admin:my_site_sitesettings_changelist' %}">Изменить данные</a></div>
+        </section>
+        {% endif %}
+    </div>
+
+    <section class="admin-activity-panel">
+        <div class="admin-panel-heading"><div><span class="admin-eyebrow">История</span><h2>Последние изменения</h2></div><p>Ваши недавние действия в панели</p></div>
+        {% get_admin_log 8 as admin_log for_user user %}
+        {% if not admin_log %}<p class="admin-empty-state">Изменений пока нет.</p>{% else %}
+        <ul class="admin-activity-list">
+            {% for entry in admin_log %}
+            <li>
+                <span class="admin-activity-marker {% if entry.is_addition %}is-addition{% elif entry.is_deletion %}is-deletion{% else %}is-change{% endif %}" aria-hidden="true"></span>
+                <div>{% if entry.is_deletion or not entry.get_admin_url %}<strong>{{ entry.object_repr }}</strong>{% else %}<a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>{% endif %}{% if entry.content_type %}<span>{{ entry.content_type.name|capfirst }}</span>{% endif %}</div>
+                <time>{{ entry.action_time|date:"d.m.Y H:i" }}</time>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}
