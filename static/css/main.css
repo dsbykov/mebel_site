@@ -359,6 +359,52 @@ h2::after {
     box-shadow: 0 5px 10px rgba(0,0,0,0.1);
 }
 
+/* Секция "Наши партнёры" */
+.partners { padding: 80px 0; }
+.partners-intro { max-width: 720px; margin: -18px 0 38px; color: #666; font-size: 1.05rem; }
+.partner-category + .partner-category { margin-top: 44px; }
+.partner-category > h3 { margin-bottom: 22px; color: var(--color-accent-dark); font-size: 1.65rem; }
+.partner-carousel-shell { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; }
+.card-carousel { display: flex; gap: 20px; min-width: 0; overflow-x: auto; padding: 10px 0 16px; scroll-behavior: smooth; scroll-snap-type: x mandatory; scrollbar-width: thin; scrollbar-color: var(--color-accent) transparent; -webkit-overflow-scrolling: touch; overscroll-behavior-inline: contain; }
+.card-carousel::-webkit-scrollbar { height: 7px; }
+.card-carousel::-webkit-scrollbar-thumb { background: var(--color-accent); border-radius: 10px; }
+.card-carousel::-webkit-scrollbar-track { background: transparent; }
+.partner-card { position: relative; flex: 0 0 300px; width: 300px; max-width: 300px; aspect-ratio: 4 / 3; overflow: hidden; background: white; color: white; text-decoration: none; border: 1px solid rgba(184, 123, 94, 0.14); border-radius: var(--border-radius); box-shadow: var(--box-shadow); scroll-snap-align: start; transition: var(--transition); }
+.partner-card:hover, .partner-card:focus-visible { transform: translateY(-7px); border-color: rgba(184, 123, 94, 0.45); box-shadow: 0 24px 45px -15px rgba(44, 44, 44, 0.2); }
+.partner-card:focus-visible { outline: 3px solid rgba(184, 123, 94, 0.35); outline-offset: 3px; }
+.partner-card-image { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; background: linear-gradient(135deg, var(--color-secondary), #fff); }
+.partner-card-image img { width: 100%; height: 100%; object-fit: cover; }
+.partner-card-image--logo img { padding: 28px; object-fit: contain; background: white; }
+.partner-card-placeholder { display: flex; align-items: center; justify-content: center; width: 76px; height: 76px; color: white; background: var(--color-accent); border-radius: 50%; font-family: var(--font-heading); font-size: 2.6rem; font-weight: 700; box-shadow: 0 10px 25px rgba(184, 123, 94, 0.28); }
+.partner-card-content { position: absolute; inset: auto 0 0; z-index: 1; padding: 46px 20px 18px; background: linear-gradient(to top, rgba(25, 20, 18, 0.92), rgba(25, 20, 18, 0)); }
+.partner-card-content h4 { margin-bottom: 4px; font-family: var(--font-heading); font-size: 1.3rem; }
+.partner-card-content p { display: -webkit-box; margin-bottom: 7px; overflow: hidden; color: rgba(255, 255, 255, 0.9); font-size: 0.82rem; line-height: 1.35; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.partner-card-link { color: #fff; font-size: 0.78rem; font-weight: 600; }
+.partner-carousel-btn { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; flex-shrink: 0; color: white; background: var(--color-accent); border: none; border-radius: 50%; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18); cursor: pointer; transition: var(--transition); }
+.partner-carousel-btn:hover:not(:disabled), .partner-carousel-btn:focus-visible { background: var(--color-accent-dark); transform: translateY(-2px); }
+.partner-carousel-btn:disabled { opacity: 0.35; cursor: default; }
+.partner-carousel-btn[hidden] { display: none; }
+.partner-carousel-indicators { display: flex; justify-content: center; gap: 8px; min-height: 10px; margin-top: 8px; }
+.partner-carousel-indicators[hidden] { display: none; }
+.partner-carousel-indicator { width: 9px; height: 9px; background: #ccc; border-radius: 50%; transition: var(--transition); }
+.partner-carousel-indicator.active { background: var(--color-accent); transform: scale(1.25); }
+
+@media (max-width: 768px) {
+    .partner-carousel-shell { gap: 10px; }
+    .partner-card { flex-basis: 280px; width: 280px; max-width: 280px; }
+    .partner-carousel-btn { width: 38px; height: 38px; }
+}
+
+@media (max-width: 480px) {
+    .partner-carousel-shell { position: relative; display: block; }
+    .card-carousel { gap: 15px; }
+    .partner-card { flex-basis: 100%; width: 100%; max-width: 100%; }
+    .partner-carousel-btn { position: absolute; top: 50%; z-index: 3; width: 36px; height: 36px; transform: translateY(-50%); }
+    .partner-carousel-btn:hover:not(:disabled), .partner-carousel-btn:focus-visible { transform: translateY(-50%) scale(1.05); }
+    .partner-carousel-prev { left: 8px; }
+    .partner-carousel-next { right: 8px; }
+}
+
 /* Секция "Отзывы" */
 .testimonials {
     padding: 80px 0;
@@ -655,7 +701,7 @@ h2::after {
     }
 }
 
-.feature-card, .portfolio-item, .step, .testimonial-card {
+.feature-card, .portfolio-item, .step, .partner-card, .testimonial-card {
     animation: fadeInUp 0.8s ease-out forwards;
 }
 
@@ -667,6 +713,17 @@ h2::after {
     padding: 10px 0;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+}
+
+.carousel.card-carousel {
+    padding: 10px 0 16px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-accent) transparent;
+}
+
+.carousel.card-carousel .portfolio-item {
+    scroll-snap-align: start;
 }
 
 /* Карточка портфолио - миниатюра */
