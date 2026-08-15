@@ -1,5 +1,5 @@
 <a class="partner-card" href="{{ partner.website_url }}" target="_blank" rel="noopener noreferrer" aria-label="Открыть сайт {{ partner.name }} в новой вкладке">
-    <div class="partner-card-image">
+    <div class="partner-card-image{% if partner.logo %} partner-card-image--logo{% endif %}">
         {% if partner.logo %}
             <img src="{{ partner.logo.url }}" alt="Логотип {{ partner.name }}" loading="lazy">
         {% elif partner.preview_image_url %}
@@ -11,6 +11,6 @@
     <div class="partner-card-content">
         <h4>{{ partner.name }}</h4>
         {% if partner.description %}<p>{{ partner.description }}</p>{% endif %}
-        <span class="partner-card-link">Перейти на сайт <span aria-hidden="true">↗</span></span>
+        <span class="partner-card-link" aria-hidden="true">Перейти на сайт ↗</span>
     </div>
 </a>
