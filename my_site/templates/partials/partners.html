@@ -5,11 +5,11 @@
         <p class="partners-intro">Проверенные производители фурнитуры и материалов, с которыми мы работаем.</p>
         {% for category in partner_categories %}
             {% if category.active_partners %}
-                <div class="partner-category">
+                <div class="partner-category card-carousel-group">
                     <h3>{{ category.name }}</h3>
                     <div class="partner-carousel-shell">
                         <button class="partner-carousel-btn partner-carousel-prev" type="button" aria-label="Предыдущие партнёры в разделе {{ category.name }}">&#10094;</button>
-                        <div class="partners-carousel" tabindex="0" aria-label="Партнёры: {{ category.name }}">
+                        <div class="partners-carousel card-carousel" data-card-carousel tabindex="0" aria-label="Партнёры: {{ category.name }}">
                             {% for partner in category.active_partners %}
                                 {% include "partials/partner_card.html" %}
                             {% endfor %}
@@ -21,11 +21,11 @@
             {% endif %}
         {% endfor %}
         {% if uncategorized_partners %}
-            <div class="partner-category">
+            <div class="partner-category card-carousel-group">
                 <h3>Другие партнёры</h3>
                 <div class="partner-carousel-shell">
                     <button class="partner-carousel-btn partner-carousel-prev" type="button" aria-label="Предыдущие партнёры в разделе Другие партнёры">&#10094;</button>
-                    <div class="partners-carousel" tabindex="0" aria-label="Партнёры: Другие партнёры">
+                    <div class="partners-carousel card-carousel" data-card-carousel tabindex="0" aria-label="Партнёры: Другие партнёры">
                         {% for partner in uncategorized_partners %}
                             {% include "partials/partner_card.html" %}
                         {% endfor %}
@@ -37,67 +37,4 @@
         {% endif %}
     </div>
 </section>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.partner-category').forEach(function (category) {
-        const carousel = category.querySelector('.partners-carousel');
-        const previousButton = category.querySelector('.partner-carousel-prev');
-        const nextButton = category.querySelector('.partner-carousel-next');
-        const indicators = category.querySelector('.partner-carousel-indicators');
-        let pageCount = 1;
-
-        function pageWidth() {
-            return Math.max(carousel.clientWidth, 1);
-        }
-
-        function currentPage() {
-            const maxScroll = Math.max(0, carousel.scrollWidth - carousel.clientWidth);
-            if (maxScroll === 0 || pageCount === 1) return 0;
-            return Math.round((carousel.scrollLeft / maxScroll) * (pageCount - 1));
-        }
-
-        function updateControls() {
-            const maxScroll = Math.max(0, carousel.scrollWidth - carousel.clientWidth);
-            pageCount = Math.max(1, Math.ceil(carousel.scrollWidth / pageWidth()));
-            const page = currentPage();
-            const hasOverflow = maxScroll > 2;
-
-            previousButton.hidden = !hasOverflow;
-            nextButton.hidden = !hasOverflow;
-            indicators.hidden = !hasOverflow;
-            previousButton.disabled = carousel.scrollLeft <= 2;
-            nextButton.disabled = carousel.scrollLeft >= maxScroll - 2;
-
-            indicators.replaceChildren();
-            if (hasOverflow) {
-                for (let index = 0; index < pageCount; index += 1) {
-                    const indicator = document.createElement('span');
-                    indicator.className = 'partner-carousel-indicator' + (index === page ? ' active' : '');
-                    indicators.appendChild(indicator);
-                }
-            }
-        }
-
-        function scrollToPage(direction) {
-            const targetPage = Math.max(0, Math.min(pageCount - 1, currentPage() + direction));
-            const maxScroll = Math.max(0, carousel.scrollWidth - carousel.clientWidth);
-            const targetLeft = pageCount > 1 ? (targetPage / (pageCount - 1)) * maxScroll : 0;
-            carousel.scrollTo({ left: targetLeft, behavior: 'smooth' });
-        }
-
-        previousButton.addEventListener('click', function () { scrollToPage(-1); });
-        nextButton.addEventListener('click', function () { scrollToPage(1); });
-        carousel.addEventListener('scroll', function () {
-            window.requestAnimationFrame(updateControls);
-        }, { passive: true });
-
-        if ('ResizeObserver' in window) {
-            new ResizeObserver(updateControls).observe(carousel);
-        } else {
-            window.addEventListener('resize', updateControls);
-        }
-        updateControls();
-    });
-});
-</script>
 {% endif %}

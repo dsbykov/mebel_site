@@ -2,15 +2,22 @@
 <section id="portfolio" class="portfolio">
     <div class="container">
         <h2>Наши последние проекты</h2>
-        <div class="carousel">
-            {% for project in projects %}
-                <div class="carousel-item portfolio-item" onclick="openModal('{{ project.title }}', '{% for img in project.images.all %}{{ img.image.url }}{% if not for.last %},{% endif %}{% endfor %}', '{{ project.description|escape }}')">
-                    <img src="{{ project.images.first.image.url }}" alt="{{ project.title }}">
-                    <div class="project-hover">
-                        <p>{{ project.description|truncatewords:10 }}</p>
-                    </div>
+        <div class="card-carousel-group">
+            <div class="partner-carousel-shell">
+                <button class="partner-carousel-btn partner-carousel-prev" type="button" aria-label="Предыдущие проекты">&#10094;</button>
+                <div class="carousel card-carousel" data-card-carousel tabindex="0" aria-label="Наши последние проекты">
+                    {% for project in projects %}
+                        <div class="carousel-item portfolio-item" onclick="openModal('{{ project.title }}', '{% for img in project.images.all %}{{ img.image.url }}{% if not for.last %},{% endif %}{% endfor %}', '{{ project.description|escape }}')">
+                            <img src="{{ project.images.first.image.url }}" alt="{{ project.title }}">
+                            <div class="project-hover">
+                                <p>{{ project.description|truncatewords:10 }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
-            {% endfor %}
+                <button class="partner-carousel-btn partner-carousel-next" type="button" aria-label="Следующие проекты">&#10095;</button>
+            </div>
+            <div class="partner-carousel-indicators" aria-hidden="true"></div>
         </div>
     </div>
 </section>
