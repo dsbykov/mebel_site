@@ -1,10 +1,13 @@
 from django.db import models
+from django.db import transaction
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 import os
 import logging
+
+from .image_processing import optimize_portfolio_image, validate_portfolio_image
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +73,15 @@ class Project(models.Model):
 
 class ProjectImage(models.Model):
     project = models.ForeignKey(Project, related_name='images', on_delete=models.CASCADE, verbose_name="Проект")
-    image = models.ImageField(upload_to='portfolio/', verbose_name="Файл изображения", help_text="Фотография будет показана в карточке и галерее проекта.")
+    image = models.ImageField(
+        upload_to='portfolio/',
+        validators=[validate_portfolio_image],
+        verbose_name="Файл изображения",
+        help_text=(
+            "JPEG, PNG, WebP, HEIC или HEIF до 20 МБ; максимум 16 000 px по стороне и 80 Мп. "
+            "Перед сохранением фотография автоматически уменьшается до 2560 px и преобразуется в WebP."
+        ),
+    )
     alt_text = models.CharField(max_length=200, blank=True, verbose_name="Описание изображения", help_text="Краткое описание фотографии для доступности и поисковых систем.")
 
     class Meta:
@@ -79,6 +90,35 @@ class ProjectImage(models.Model):
 
     def __str__(self):
         return f"Фото для {self.project.title}"
+
+    def save(self, *args, **kwargs):
+        """Гарантирует обработку изображения даже при сохранении вне админки."""
+        update_fields = kwargs.get('update_fields')
+        should_process = self.image and not self.image._committed and (
+            update_fields is None or 'image' in update_fields
+        )
+        old_image_name = None
+        if self.pk:
+            old_image_name = type(self).objects.filter(pk=self.pk).values_list('image', flat=True).first()
+
+        if should_process:
+            source_file = self.image.file
+            if not getattr(source_file, '_portfolio_image_optimized', False):
+                self.image = optimize_portfolio_image(source_file)
+
+        super().save(*args, **kwargs)
+
+        new_image_name = self.image.name if self.image else None
+        if old_image_name and old_image_name != new_image_name:
+            storage = self.image.storage
+
+            def delete_replaced_image():
+                try:
+                    storage.delete(old_image_name)
+                except Exception:
+                    logger.exception("Не удалось удалить заменённую фотографию '%s'", old_image_name)
+
+            transaction.on_commit(delete_replaced_image)
 
 
 # Сигнал для удаления файла изображения при удалении объекта ProjectImage
