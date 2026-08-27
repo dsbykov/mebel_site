@@ -5,6 +5,7 @@ from django.db.models import Count
 from django.utils.html import format_html
 
 from .models import UserProfile, Review, Project, ProjectImage, Partner, PartnerCategory, SiteSettings
+from .forms import ProjectImageAdminForm
 from .partner_preview import fetch_preview_image
 
 
@@ -68,12 +69,25 @@ class ReviewAdmin(admin.ModelAdmin):
         return format_html('<span class="admin-status admin-status--warning">{}</span>', 'Ожидает проверки')
 
 
-class ProjectImageInline(admin.TabularInline):
+class ProjectImageInline(admin.StackedInline):
     model = ProjectImage
+    form = ProjectImageAdminForm
     extra = 1
-    fields = ('image', 'alt_text')
+    fields = ('image_preview', 'image', 'alt_text')
+    readonly_fields = ('image_preview',)
+    can_delete = True
+    show_change_link = True
     verbose_name = 'Фотография проекта'
     verbose_name_plural = 'Фотографии проекта'
+
+    @admin.display(description='Текущее изображение')
+    def image_preview(self, obj):
+        if obj and obj.pk and obj.image:
+            return format_html(
+                '<img class="admin-project-image-preview" src="{}" alt="Текущее фото проекта">',
+                obj.image.url,
+            )
+        return 'Изображение появится здесь после загрузки и сохранения проекта.'
 
 
 @admin.register(Project)
@@ -112,6 +126,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectImage)
 class ProjectImageAdmin(admin.ModelAdmin):
+    form = ProjectImageAdminForm
     list_display = ('image_thumbnail', 'project', 'alt_text')
     list_display_links = ('image_thumbnail', 'project')
     search_fields = ('project__title', 'alt_text')

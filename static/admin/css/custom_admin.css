@@ -283,7 +283,56 @@ html[data-theme="dark"] #result_list tbody tr:hover { background: #172554; }
 .change-form .aligned .form-row textarea,
 .change-form .aligned .form-row select { width: min(100%, 720px); max-width: 100%; box-sizing: border-box; }
 .change-form .inline-group { margin-top: 22px; }
-.change-form .inline-related { border-bottom-color: var(--hairline-color); }
+.change-form .inline-related {
+    margin: 14px;
+    overflow: hidden;
+    border: 1px solid var(--hairline-color);
+    border-radius: 12px;
+}
+.change-form .inline-related h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    margin: 0;
+    padding: 8px 12px;
+    color: var(--body-fg);
+    background: #eff6ff;
+    border: 0;
+    border-bottom: 1px solid var(--hairline-color);
+}
+.change-form .inline-related h3 .delete {
+    display: inline-flex;
+    float: none;
+    align-items: center;
+    gap: 7px;
+    margin-left: auto;
+    padding: 7px 10px;
+    color: #991b1b;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    font-weight: 750;
+}
+.change-form .inline-related h3 .delete label {
+    width: auto;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    color: inherit;
+    font-size: 0.78rem;
+    cursor: pointer;
+}
+.change-form .inline-related h3 .delete input { cursor: pointer; }
+.admin-project-image-preview {
+    display: block;
+    width: min(100%, 360px);
+    max-height: 240px;
+    object-fit: contain;
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+html[data-theme="dark"] .change-form .inline-related h3 { background: #1e293b; }
 
 :where(a, button, input, select, textarea):focus-visible {
     outline: 3px solid #38bdf8 !important;

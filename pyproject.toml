@@ -9,6 +9,7 @@ dependencies = [
     "dotenv>=0.9.9",
     "gunicorn>=26.0.0",
     "pillow>=12.2.0",
+    "pillow-heif>=1.5.0",
     "psycopg2-binary>=2.9.12",
     "social-auth-app-django>=5.9.0",
 ]
